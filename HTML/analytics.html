@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignalSense - Analytics</title>
+    <link rel="stylesheet" href="../Styles/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📊 Telco Network Analytics</h1>
+        <p class="subtitle">Performance and Competitive Insights</p>
+        <nav>
+          <a href="dashboard.html" class="nav-link">Dashboard</a>
+          <a href="analytics.html" class="nav-link active">Analytics</a>
+          <a href="planning.html" class="nav-link">Planning</a>
+        </nav>
+      </header>
+
+      <div class="analytics-panel">
+        <h3>Network Performance Analytics</h3>
+        <div class="kpi-card">
+          <h4>Avg Signal Strength (dBm)</h4>
+          <p id="avg-dbm">0</p>
+        </div>
+        <div class="kpi-card">
+          <h4>Avg Throughput (Mbps)</h4>
+          <p id="avg-throughput">0</p>
+        </div>
+        <div class="kpi-card">
+          <h4>Avg Latency (ms)</h4>
+          <p id="avg-latency">0</p>
+        </div>
+        <div class="kpi-card">
+          <h4>Est. Packet Loss (%)</h4>
+          <p id="packet-loss">0%</p>
+        </div>
+      </div>
+
+      <div class="carrier-summary">
+        <h3>Carrier Performance Comparison</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Carrier</th>
+              <th>Avg dBm</th>
+              <th>Coverage %</th>
+              <th>Weak Areas</th>
+            </tr>
+          </thead>
+          <tbody id="carrier-table-body"></tbody>
+        </table>
+        <canvas id="carrier-chart" height="200"></canvas>
+      </div>
+
+      <div class="trend-analysis">
+        <h3>Historical Coverage Trend</h3>
+        <canvas id="trend-chart" height="200"></canvas>
+      </div>
+    </div>
+    <script src="../Javascript/data.js"></script>
+    <script src="../Javascript/utils.js"></script>
+    <script src="../Javascript/analytics.js"></script>
+  </body>
+</html>

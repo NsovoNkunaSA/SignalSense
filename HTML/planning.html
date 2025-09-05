@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignalSense - Planning</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="../Styles/dashboard.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🗼 Telco Network Planning</h1>
+        <p class="subtitle">Infrastructure and Business Impact Tools</p>
+        <nav>
+          <a href="dashboard.html" class="nav-link">Dashboard</a>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="planning.html" class="nav-link active">Planning</a>
+        </nav>
+      </header>
+
+      <div id="map">
+        <div class="controls">
+          <div class="control-group">
+            <h3>Location Search</h3>
+            <input
+              type="text"
+              id="location-search"
+              placeholder="e.g., -33.9249,18.4241 or Cape Town"
+            />
+            <button class="action-btn" id="search-btn">🔍 Search</button>
+          </div>
+          <button class="action-btn" id="suggest-towers">
+            🗼 Suggest New Towers
+          </button>
+          <div class="control-group">
+            <h3>ROI Calculator</h3>
+            <input
+              type="number"
+              id="invest-cost"
+              placeholder="Investment Cost ($)"
+            />
+            <input
+              type="number"
+              id="net-profit"
+              placeholder="Expected Net Profit ($)"
+            />
+            <button class="action-btn" id="calc-roi">📊 Calculate ROI</button>
+            <p id="roi-result"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="signal-info">
+        <div class="signal-card impact-card">
+          <h4>Est. Revenue Loss</h4>
+          <p id="revenue-loss">$0</p>
+        </div>
+        <div class="signal-card health-card">
+          <h4>Network Health Score</h4>
+          <p id="health-score">0/100</p>
+        </div>
+      </div>
+    </div>
+    <script src="../Javascript/data.js"></script>
+    <script src="../Javascript/utils.js"></script>
+    <script src="../Javascript/planning.js"></script>
+  </body>
+</html>

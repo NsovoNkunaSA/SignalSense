@@ -13,14 +13,16 @@
     <div class="container">
       <header>
         <h1>📡 Telco Signal Coverage Dashboard</h1>
-        <p class="subtitle">
-          Real-time network performance with pulsating signal indicators
-        </p>
+        <p class="subtitle">Real-time network performance</p>
+        <nav>
+          <a href="dashboard.html" class="nav-link active">Dashboard</a>
+          <a href="analytics.html" class="nav-link">Analytics</a>
+          <a href="planning.html" class="nav-link">Planning</a>
+        </nav>
       </header>
 
       <div id="map">
         <button class="report-btn" id="report-btn">📑 Generate Report</button>
-
         <div class="controls">
           <div class="control-group">
             <h3>Carrier Selection</h3>
@@ -32,7 +34,6 @@
               <option value="Telkom">Telkom</option>
             </select>
           </div>
-
           <div class="control-group">
             <h3>Signal Filter</h3>
             <select id="signal-filter">
@@ -42,7 +43,6 @@
               <option value="weak">Weak Only</option>
             </select>
           </div>
-
           <div class="control-group">
             <h3>Location Search</h3>
             <input
@@ -52,18 +52,13 @@
             />
             <button class="action-btn" id="search-btn">🔍 Search</button>
           </div>
-
           <button class="action-btn" id="simulate-update">
             🔄 Simulate Update
-          </button>
-          <button class="action-btn" id="play-simulation">
-            ▶️ Play Trend Simulation
           </button>
           <button class="action-btn" id="toggle-pulsing">
             ⏯️ Toggle Pulsing
           </button>
         </div>
-
         <div class="legend">
           <h4>Signal Strength</h4>
           <p><span class="signal-color strong"></span> Strong (-50 dBm)</p>
@@ -94,23 +89,9 @@
           <p id="problem-count">0</p>
         </div>
       </div>
-
-      <div id="carrier-summary" class="carrier-summary">
-        <h3>Carrier Performance Summary</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Carrier</th>
-              <th>Avg dBm</th>
-              <th>Coverage %</th>
-              <th>Weak Areas</th>
-            </tr>
-          </thead>
-          <tbody id="carrier-table-body"></tbody>
-        </table>
-      </div>
     </div>
-
+    <script src="../Javascript/data.js"></script>
+    <script src="../Javascript/utils.js"></script>
     <script src="../Javascript/dashboard.js"></script>
   </body>
 </html>
