@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         alert("Login successful!");
-        window.location.href = "home.html"; // Redirect to homepage
+        window.location.href = "../HTML/dashboard.html"; // Redirect to homepage
       })
       .catch((error) => {
         let errorMessage = "An error occurred during login.";
