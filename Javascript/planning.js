@@ -14,8 +14,8 @@ var heatLayer = L.heatLayer(
 ).addTo(map);
 
 var markers = [];
-var filteredLocation = null; // Track the currently filtered location
-var filteredCityRadius = 0.5; // Radius in degrees for filtering (~50km)
+var filteredLocation = null;
+var filteredCityRadius = 0.5;
 var cities = {
   "cape town": [-33.9249, 18.4241],
   johannesburg: [-26.2041, 28.0473],
@@ -32,9 +32,8 @@ var cities = {
   george: [-34.1833, 22.1333],
 };
 
-// Function to calculate distance between two lat/lng points (Haversine formula)
 function getDistance(lat1, lng1, lat2, lng2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
@@ -44,15 +43,12 @@ function getDistance(lat1, lng1, lat2, lng2) {
       Math.sin(dLng / 2) *
       Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
+  return R * c;
 }
 
 function updatePlanning() {
-  // Clear existing markers
   markers.forEach((marker) => map.removeLayer(marker));
   markers = [];
-
-  // Filter signalData based on filteredLocation
   let filteredData = signalData;
   if (filteredLocation) {
     filteredData = signalData.filter((p) => {
@@ -62,11 +58,9 @@ function updatePlanning() {
         filteredLocation.lat,
         filteredLocation.lng
       );
-      return distance <= filteredCityRadius * 111; // Convert degrees to km (1 degree ≈ 111 km)
+      return distance <= filteredCityRadius * 111;
     });
   }
-
-  // Update heat layer with filtered data
   map.removeLayer(heatLayer);
   heatLayer = L.heatLayer(
     filteredData.map((p) => [p[0], p[1], p[2]]),
@@ -77,11 +71,7 @@ function updatePlanning() {
       gradient: { 0.3: "blue", 0.6: "yellow", 1: "red" },
     }
   ).addTo(map);
-
-  // Add pulsating markers for filtered data
   addPulsatingMarkers(map, markers, filteredData);
-
-  // Update stats based on filtered data
   var stats = updateCounters(filteredData);
   document.getElementById("revenue-loss").textContent = "$" + stats.revenueLoss;
   document.getElementById("health-score").textContent =
@@ -89,7 +79,6 @@ function updatePlanning() {
 }
 
 function suggestTowers() {
-  // Filter weak points (signal strength <= 0.5) within the filtered location
   let weakPoints = signalData.filter((p) => p[2] <= 0.5);
   if (filteredLocation) {
     weakPoints = weakPoints.filter((p) => {
@@ -99,21 +88,16 @@ function suggestTowers() {
         filteredLocation.lat,
         filteredLocation.lng
       );
-      return distance <= filteredCityRadius * 111; // Filter by proximity
+      return distance <= filteredCityRadius * 111;
     });
   }
-
   if (weakPoints.length === 0) {
     document.getElementById("report-content").textContent =
       "No weak areas found in the selected region.";
     return alert("No weak areas found in the selected region.");
   }
-
-  // Calculate the average location of weak points
   var avgLat = weakPoints.reduce((sum, p) => sum + p[0], 0) / weakPoints.length;
   var avgLng = weakPoints.reduce((sum, p) => sum + p[1], 0) / weakPoints.length;
-
-  // Add a marker for the suggested tower
   L.marker([avgLat, avgLng], {
     icon: L.divIcon({
       className: "suggest-marker",
@@ -124,8 +108,6 @@ function suggestTowers() {
     .bindPopup(
       `Suggested Tower Location: ${avgLat.toFixed(4)}, ${avgLng.toFixed(4)}`
     );
-
-  // Generate the report
   const cityName =
     Object.keys(cities).find(
       (key) =>
@@ -152,19 +134,15 @@ function searchLocation() {
     .value.trim()
     .toLowerCase();
   if (!input) return;
-
   let lat, lng;
   if (input.includes(",")) {
     [lat, lng] = input.split(",").map(Number);
   } else {
     [lat, lng] = cities[input] || [-30, 25];
   }
-
-  // Set the filtered location and update the map
   filteredLocation = { lat, lng };
   map.setView([lat, lng], 10);
-  updatePlanning(); // Refresh markers, heat layer, and stats
-  // Clear previous report
+  updatePlanning();
   document.getElementById("report-content").textContent =
     "No report generated yet. Click 'Suggest Towers' to generate a report.";
 }
@@ -190,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "Please enter valid numbers";
     }
   });
-  // Download report button
   document.getElementById("download-report").addEventListener("click", () => {
     const reportText = document.getElementById("report-content").textContent;
     if (
