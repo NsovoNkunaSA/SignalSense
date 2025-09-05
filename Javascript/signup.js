@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         alert("Signup successful! Now login.");
-        window.location.href = "login.html"; // Redirect to login page
+        window.location.href = "../HTML/login.html"; // Redirect to login page
       })
       .catch((error) => {
         let errorMessage = "An error occurred during signup.";
