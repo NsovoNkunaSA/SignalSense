@@ -15,7 +15,22 @@ var heatLayer = L.heatLayer(
 
 var markers = [];
 var filteredLocation = null; // Track the currently filtered location
-var filteredCityRadius = 0.5; // Radius in degrees for filtering (adjust as needed, ~50km)
+var filteredCityRadius = 0.5; // Radius in degrees for filtering (~50km)
+var cities = {
+  "cape town": [-33.9249, 18.4241],
+  johannesburg: [-26.2041, 28.0473],
+  durban: [-29.8587, 31.0218],
+  pretoria: [-25.7479, 28.2293],
+  "port elizabeth": [-33.9608, 25.6022],
+  bloemfontein: [-29.0852, 26.1596],
+  kimberley: [-28.7406, 24.772],
+  "east london": [-31.6169, 29.5552],
+  polokwane: [-23.8965, 29.4486],
+  newcastle: [-27.7692, 30.7916],
+  nelspruit: [-25.4214, 30.984],
+  upington: [-28.4575, 21.2425],
+  george: [-34.1833, 22.1333],
+};
 
 // Function to calculate distance between two lat/lng points (Haversine formula)
 function getDistance(lat1, lng1, lat2, lng2) {
@@ -89,6 +104,8 @@ function suggestTowers() {
   }
 
   if (weakPoints.length === 0) {
+    document.getElementById("report-content").textContent =
+      "No weak areas found in the selected region.";
     return alert("No weak areas found in the selected region.");
   }
 
@@ -108,6 +125,24 @@ function suggestTowers() {
       `Suggested Tower Location: ${avgLat.toFixed(4)}, ${avgLng.toFixed(4)}`
     );
 
+  // Generate the report
+  const cityName =
+    Object.keys(cities).find(
+      (key) =>
+        cities[key][0] === filteredLocation?.lat &&
+        cities[key][1] === filteredLocation?.lng
+    ) || "Custom Coordinates";
+  const report = `
+Planning Report
+---------------
+Filtered Location: ${cityName} (${filteredLocation?.lat || "N/A"}, ${
+    filteredLocation?.lng || "N/A"
+  })
+Suggested Tower Coordinates: ${avgLat.toFixed(4)}, ${avgLng.toFixed(4)}
+Number of Weak Signal Points: ${weakPoints.length}
+Timestamp: ${new Date().toLocaleString()}
+  `;
+  document.getElementById("report-content").textContent = report;
   alert(`Suggested tower at ${avgLat.toFixed(4)}, ${avgLng.toFixed(4)}`);
 }
 
@@ -122,28 +157,16 @@ function searchLocation() {
   if (input.includes(",")) {
     [lat, lng] = input.split(",").map(Number);
   } else {
-    const cities = {
-      "cape town": [-33.9249, 18.4241],
-      johannesburg: [-26.2041, 28.0473],
-      durban: [-29.8587, 31.0218],
-      pretoria: [-25.7479, 28.2293],
-      "port elizabeth": [-33.9608, 25.6022],
-      bloemfontein: [-29.0852, 26.1596],
-      kimberley: [-28.7406, 24.772],
-      "east london": [-31.6169, 29.5552],
-      polokwane: [-23.8965, 29.4486],
-      newcastle: [-27.7692, 30.7916],
-      nelspruit: [-25.4214, 30.984],
-      upington: [-28.4575, 21.2425],
-      george: [-34.1833, 22.1333],
-    };
     [lat, lng] = cities[input] || [-30, 25];
   }
 
   // Set the filtered location and update the map
   filteredLocation = { lat, lng };
   map.setView([lat, lng], 10);
-  updatePlanning(); // Refresh markers, heat layer, and stats for the filtered area
+  updatePlanning(); // Refresh markers, heat layer, and stats
+  // Clear previous report
+  document.getElementById("report-content").textContent =
+    "No report generated yet. Click 'Suggest Towers' to generate a report.";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -166,5 +189,23 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("roi-result").textContent =
         "Please enter valid numbers";
     }
+  });
+  // Download report button
+  document.getElementById("download-report").addEventListener("click", () => {
+    const reportText = document.getElementById("report-content").textContent;
+    if (
+      reportText ===
+      "No report generated yet. Click 'Suggest Towers' to generate a report."
+    ) {
+      alert("Please generate a report first by clicking 'Suggest Towers'.");
+      return;
+    }
+    const blob = new Blob([reportText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tower_planning_report_${new Date().toISOString()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   });
 });
