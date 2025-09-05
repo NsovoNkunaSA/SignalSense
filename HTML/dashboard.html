@@ -26,11 +26,10 @@
             <h3>Carrier Selection</h3>
             <select id="carrier-select">
               <option value="all">All Carriers</option>
-              <option value="verizon">Verizon</option>
-              <option value="att">AT&T</option>
-              <option value="tmobile">T-Mobile</option>
-              <option value="vodacom">Vodacom</option>
-              <option value="mtn">MTN</option>
+              <option value="Vodacom">Vodacom</option>
+              <option value="MTN">MTN</option>
+              <option value="Cell C">Cell C</option>
+              <option value="Telkom">Telkom</option>
             </select>
           </div>
 
@@ -44,8 +43,21 @@
             </select>
           </div>
 
+          <div class="control-group">
+            <h3>Location Search</h3>
+            <input
+              type="text"
+              id="location-search"
+              placeholder="e.g., -33.9249,18.4241 or Cape Town"
+            />
+            <button class="action-btn" id="search-btn">🔍 Search</button>
+          </div>
+
           <button class="action-btn" id="simulate-update">
             🔄 Simulate Update
+          </button>
+          <button class="action-btn" id="play-simulation">
+            ▶️ Play Trend Simulation
           </button>
           <button class="action-btn" id="toggle-pulsing">
             ⏯️ Toggle Pulsing
@@ -77,6 +89,25 @@
           <h4>Total Coverage</h4>
           <p id="total-coverage">0%</p>
         </div>
+        <div class="signal-card problem-card">
+          <h4>Problem Areas (Weak)</h4>
+          <p id="problem-count">0</p>
+        </div>
+      </div>
+
+      <div id="carrier-summary" class="carrier-summary">
+        <h3>Carrier Performance Summary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Carrier</th>
+              <th>Avg dBm</th>
+              <th>Coverage %</th>
+              <th>Weak Areas</th>
+            </tr>
+          </thead>
+          <tbody id="carrier-table-body"></tbody>
+        </table>
       </div>
     </div>
 

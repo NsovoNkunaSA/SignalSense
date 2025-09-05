@@ -63,17 +63,20 @@ var heatLayer = L.heatLayer(
   }
 ).addTo(map);
 
-// Add markers for each point with pulsating effects
+// Markers array
 var markers = [];
-function addPulsatingMarkers() {
-  signalData.forEach(function (point) {
-    // Determine marker color based on signal strength
-    var color;
-    if (point[2] > 0.8) color = "red";
-    else if (point[2] > 0.5) color = "orange";
-    else color = "blue";
 
-    // Create marker with custom pulsating icon
+// Function to clear markers
+function clearMarkers() {
+  markers.forEach((m) => map.removeLayer(m.marker));
+  markers = [];
+}
+
+// Function to add pulsating markers based on filtered data
+function addPulsatingMarkers(filteredData) {
+  clearMarkers();
+  filteredData.forEach(function (point) {
+    var color = point[2] > 0.8 ? "red" : point[2] > 0.5 ? "orange" : "blue";
     var marker = L.marker([point[0], point[1]], {
       icon: L.divIcon({
         className: "pulsating-marker",
@@ -83,7 +86,6 @@ function addPulsatingMarkers() {
       }),
     }).addTo(map);
 
-    // Bind popup with signal information
     marker.bindPopup(`
             <div style="text-align: center; min-width: 180px;">
                 <b style="color: ${color}; font-size: 16px;">${point[3]}</b><br>
@@ -110,7 +112,6 @@ function addPulsatingMarkers() {
             </div>
         `);
 
-    // Store marker reference
     markers.push({
       marker: marker,
       carrier: point[3],
@@ -119,26 +120,84 @@ function addPulsatingMarkers() {
   });
 }
 
-// Generate report function
-function generateReport() {
-  // In a real application, this would generate a detailed report
-  alert(
-    "📑 Generating comprehensive signal strength report...\n\nThis would include:\n- Coverage statistics\n- Signal strength distribution\n- Problem areas identified\n- Carrier comparison data"
-  );
+// Function to apply filters
+function applyFilters() {
+  var carrier = document.getElementById("carrier-select").value;
+  var signal = document.getElementById("signal-filter").value;
 
-  // Simulate report generation
-  setTimeout(function () {
-    alert(
-      "Report generated successfully! Download would start automatically in a real application."
-    );
-  }, 1500);
+  var filteredData = signalData.filter((point) => {
+    var carrierMatch = carrier === "all" || point[3] === carrier;
+    var signalMatch = true;
+    if (signal === "strong") signalMatch = point[2] > 0.8;
+    else if (signal === "medium")
+      signalMatch = point[2] > 0.5 && point[2] <= 0.8;
+    else if (signal === "weak") signalMatch = point[2] <= 0.5;
+    return carrierMatch && signalMatch;
+  });
+
+  heatLayer.setLatLngs(
+    filteredData.map((point) => [point[0], point[1], point[2]])
+  );
+  addPulsatingMarkers(filteredData);
+  updateCounters(filteredData);
+  updateCarrierSummary(filteredData);
+}
+
+// Generate report function (now downloads CSV)
+function generateReport() {
+  var carrier = document.getElementById("carrier-select").value;
+  var signal = document.getElementById("signal-filter").value;
+  var filteredData = signalData.filter((point) => {
+    var carrierMatch = carrier === "all" || point[3] === carrier;
+    var signalMatch = true;
+    if (signal === "strong") signalMatch = point[2] > 0.8;
+    else if (signal === "medium")
+      signalMatch = point[2] > 0.5 && point[2] <= 0.8;
+    else if (signal === "weak") signalMatch = point[2] <= 0.5;
+    return carrierMatch && signalMatch;
+  });
+
+  // Create CSV content
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += "Latitude,Longitude,Strength,Carrier,dBm\n";
+  filteredData.forEach((point) => {
+    csvContent += `${point[0]},${point[1]},${point[2]},${point[3]},${point[4]}\n`;
+  });
+
+  // Add summary stats to CSV
+  csvContent += "\nSummary Stats\n";
+  csvContent += "Carrier,Avg dBm,Coverage %,Weak Areas\n";
+  const carriers = ["Vodacom", "MTN", "Cell C", "Telkom"];
+  carriers.forEach((c) => {
+    const carrierData = filteredData.filter((p) => p[3] === c);
+    if (carrierData.length > 0) {
+      const avgDbm = (
+        carrierData.reduce((sum, p) => sum + p[4], 0) / carrierData.length
+      ).toFixed(2);
+      const coverage = Math.min(
+        100,
+        (carrierData.reduce((sum, p) => sum + (p[2] > 0.5 ? 1 : 0.5), 0) /
+          carrierData.length) *
+          100
+      ).toFixed(0);
+      const weakCount = carrierData.filter((p) => p[2] <= 0.5).length;
+      csvContent += `${c},${avgDbm},${coverage},${weakCount}\n`;
+    }
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "signal_report.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // Simulate live data update
 function simulateLiveUpdate() {
-  // Add a new random signal point somewhere in Southern Africa
-  var lat = -30 + (Math.random() - 0.5) * 10; // Wider range
-  var lng = 25 + (Math.random() - 0.5) * 10; // Wider range
+  var lat = -30 + (Math.random() - 0.5) * 10;
+  var lng = 25 + (Math.random() - 0.5) * 10;
   var strength = Math.random();
   var carriers = ["Vodacom", "MTN", "Cell C", "Telkom"];
   var carrier = carriers[Math.floor(Math.random() * carriers.length)];
@@ -149,119 +208,131 @@ function simulateLiveUpdate() {
       ? -70 - Math.random() * 20
       : -90 - Math.random() * 30;
 
-  // Add to heat layer
   signalData.push([lat, lng, strength, carrier, dBm]);
-  heatLayer.setData(signalData.map((point) => [point[0], point[1], point[2]]));
+  applyFilters(); // Reapply filters after update
+}
 
-  // Add marker
-  var color = strength > 0.8 ? "red" : strength > 0.5 ? "orange" : "blue";
-  var marker = L.marker([lat, lng], {
-    icon: L.divIcon({
-      className: "pulsating-marker",
-      html: `<div style="background-color: ${color}; width: 16px; height: 16px; border-radius: 50%; 
-                   animation: pulse 2s infinite; box-shadow: 0 0 0 0 ${color};"></div>`,
-      iconSize: [16, 16],
-    }),
-  }).addTo(map);
-
-  marker.bindPopup(`
-        <div style="text-align: center; min-width: 180px;">
-            <b style="color: ${color}; font-size: 16px;">${carrier}</b><br>
-            <div style="margin: 8px 0;">
-                <span style="font-weight: bold;">Strength:</span> ${dBm.toFixed(
-                  2
-                )} dBm<br>
-                <span style="font-weight: bold;">Quality:</span> ${
-                  strength > 0.8
-                    ? "Excellent"
-                    : strength > 0.5
-                    ? "Good"
-                    : "Poor"
-                }
-            </div>
-            <div style="width: 100%; height: 8px; background: #eee; border-radius: 4px; margin: 8px 0;">
-                <div style="width: ${
-                  strength * 100
-                }%; height: 100%; background: ${color}; border-radius: 4px;"></div>
-            </div>
-            <div style="font-size: 12px; color: #666;">
-                Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}
-            </div>
-        </div>
-    `);
-
-  markers.push({
-    marker: marker,
-    carrier: carrier,
-    strength: strength,
-  });
-
-  // Update counters
-  updateCounters();
-
-  alert(
-    `Live update simulated! New ${carrier} signal point added at ${lat.toFixed(
-      4
-    )}, ${lng.toFixed(4)}`
-  );
+// Play trend simulation (adds 5 points over time)
+let simulationInterval;
+function playTrendSimulation() {
+  if (simulationInterval) clearInterval(simulationInterval);
+  let count = 0;
+  simulationInterval = setInterval(() => {
+    if (count >= 5) clearInterval(simulationInterval);
+    simulateLiveUpdate();
+    count++;
+  }, 1000);
 }
 
 // Update signal counters
-function updateCounters() {
-  var strongCount = signalData.filter((point) => point[2] > 0.8).length;
-  var mediumCount = signalData.filter(
+function updateCounters(filteredData) {
+  var strongCount = filteredData.filter((point) => point[2] > 0.8).length;
+  var mediumCount = filteredData.filter(
     (point) => point[2] > 0.5 && point[2] <= 0.8
   ).length;
-  var weakCount = signalData.filter((point) => point[2] <= 0.5).length;
+  var weakCount = filteredData.filter((point) => point[2] <= 0.5).length;
+  var problemCount = filteredData.filter((point) => point[4] < -90).length; // Weak below -90 dBm
 
   document.getElementById("strong-count").textContent = strongCount;
   document.getElementById("medium-count").textContent = mediumCount;
   document.getElementById("weak-count").textContent = weakCount;
+  document.getElementById("problem-count").textContent = problemCount;
 
-  // Calculate "coverage" (just for demonstration)
   var coverage = Math.min(
     100,
     Math.floor(
       (100 * (strongCount * 1 + mediumCount * 0.7 + weakCount * 0.3)) /
-        signalData.length
+        filteredData.length
     )
   );
-  document.getElementById("total-coverage").textContent = coverage + "%";
+  document.getElementById("total-coverage").textContent =
+    (isNaN(coverage) ? 0 : coverage) + "%";
+}
+
+// Update carrier summary table
+function updateCarrierSummary(filteredData) {
+  const tableBody = document.getElementById("carrier-table-body");
+  tableBody.innerHTML = "";
+  const carriers = ["Vodacom", "MTN", "Cell C", "Telkom"];
+  carriers.forEach((carrier) => {
+    const carrierData = filteredData.filter((point) => point[3] === carrier);
+    if (carrierData.length > 0) {
+      const avgDbm = (
+        carrierData.reduce((sum, point) => sum + point[4], 0) /
+        carrierData.length
+      ).toFixed(2);
+      const coverage = Math.min(
+        100,
+        (carrierData.reduce(
+          (sum, point) => sum + (point[2] > 0.5 ? 1 : 0.5),
+          0
+        ) /
+          carrierData.length) *
+          100
+      ).toFixed(0);
+      const weakCount = carrierData.filter((point) => point[2] <= 0.5).length;
+      const row = `<tr><td>${carrier}</td><td>${avgDbm}</td><td>${coverage}%</td><td>${weakCount}</td></tr>`;
+      tableBody.innerHTML += row;
+    }
+  });
 }
 
 // Toggle pulsing effects
 function togglePulsing() {
-  var markers = document.querySelectorAll(".pulsating-marker div");
+  var markerDivs = document.querySelectorAll(".pulsating-marker div");
   var legendItems = document.querySelectorAll(".signal-color");
 
-  markers.forEach((marker) => {
-    if (marker.style.animationPlayState === "paused") {
-      marker.style.animationPlayState = "running";
-    } else {
-      marker.style.animationPlayState = "paused";
-    }
+  markerDivs.forEach((item) => {
+    item.style.animationPlayState =
+      item.style.animationPlayState === "paused" ? "running" : "paused";
   });
 
   legendItems.forEach((item) => {
-    if (item.style.animationPlayState === "paused") {
-      item.style.animationPlayState = "running";
-    } else {
-      item.style.animationPlayState = "paused";
-    }
+    item.style.animationPlayState =
+      item.style.animationPlayState === "paused" ? "running" : "paused";
   });
+}
 
-  alert("Pulsating effects toggled!");
+// Location search (simple coord or city zoom, case-insensitive)
+function searchLocation() {
+  const input = document
+    .getElementById("location-search")
+    .value.trim()
+    .toLowerCase();
+  if (!input) return;
+
+  let lat, lng;
+  if (input.includes(",")) {
+    [lat, lng] = input.split(",").map(Number);
+  } else {
+    // Simple city mapping (keys in lowercase)
+    const cities = {
+      "cape town": [-33.9249, 18.4241],
+      johannesburg: [-26.2041, 28.0473],
+      durban: [-29.8587, 31.0218],
+      pretoria: [-25.7479, 28.2293],
+      "port elizabeth": [-33.9608, 25.6022],
+      bloemfontein: [-29.0852, 26.1596],
+      kimberley: [-28.7406, 24.772],
+      "east london": [-32.9833, 27.8667], // Corrected to actual East London coords
+      polokwane: [-23.8965, 29.4486],
+      newcastle: [-27.7692, 30.7916],
+      nelspruit: [-25.4214, 30.984],
+      upington: [-28.4575, 21.2425],
+      george: [-34.1833, 22.1333],
+    };
+    [lat, lng] = cities[input] || [-30, 25]; // Default if not found
+  }
+
+  map.setView([lat, lng], 10);
 }
 
 // Initialize when document is ready
 document.addEventListener("DOMContentLoaded", function () {
-  // Add pulsating markers to the map
-  addPulsatingMarkers();
+  addPulsatingMarkers(signalData);
+  updateCounters(signalData);
+  updateCarrierSummary(signalData);
 
-  // Initialize counters
-  updateCounters();
-
-  // Add event listeners
   document
     .getElementById("report-btn")
     .addEventListener("click", generateReport);
@@ -269,23 +340,20 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("simulate-update")
     .addEventListener("click", simulateLiveUpdate);
   document
+    .getElementById("play-simulation")
+    .addEventListener("click", playTrendSimulation);
+  document
     .getElementById("toggle-pulsing")
     .addEventListener("click", togglePulsing);
-
-  // Filter event listeners
   document
     .getElementById("carrier-select")
-    .addEventListener("change", function (e) {
-      // In a real application, this would filter the data
-      alert(`Filtering by carrier: ${e.target.value}`);
-    });
-
+    .addEventListener("change", applyFilters);
   document
     .getElementById("signal-filter")
-    .addEventListener("change", function (e) {
-      // In a real application, this would filter the data
-      alert(`Filtering by signal strength: ${e.target.value}`);
-    });
+    .addEventListener("change", applyFilters);
+  document
+    .getElementById("search-btn")
+    .addEventListener("click", searchLocation);
 });
 
 // Add CSS for pulsating markers
