@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignalSense - Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="../Styles/dashboard.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📡 Telco Signal Coverage Dashboard</h1>
+        <p class="subtitle">
+          Real-time network performance with pulsating signal indicators
+        </p>
+      </header>
+
+      <div id="map">
+        <button class="report-btn" id="report-btn">📑 Generate Report</button>
+
+        <div class="controls">
+          <div class="control-group">
+            <h3>Carrier Selection</h3>
+            <select id="carrier-select">
+              <option value="all">All Carriers</option>
+              <option value="verizon">Verizon</option>
+              <option value="att">AT&T</option>
+              <option value="tmobile">T-Mobile</option>
+              <option value="vodacom">Vodacom</option>
+              <option value="mtn">MTN</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <h3>Signal Filter</h3>
+            <select id="signal-filter">
+              <option value="all">All Strength Levels</option>
+              <option value="strong">Strong Only</option>
+              <option value="medium">Medium Only</option>
+              <option value="weak">Weak Only</option>
+            </select>
+          </div>
+
+          <button class="action-btn" id="simulate-update">
+            🔄 Simulate Update
+          </button>
+          <button class="action-btn" id="toggle-pulsing">
+            ⏯️ Toggle Pulsing
+          </button>
+        </div>
+
+        <div class="legend">
+          <h4>Signal Strength</h4>
+          <p><span class="signal-color strong"></span> Strong (-50 dBm)</p>
+          <p><span class="signal-color medium"></span> Medium (-80 dBm)</p>
+          <p><span class="signal-color weak"></span> Weak (-110 dBm)</p>
+        </div>
+      </div>
+
+      <div class="signal-info">
+        <div class="signal-card strong-card">
+          <h4>Strong Signals</h4>
+          <p id="strong-count">0</p>
+        </div>
+        <div class="signal-card medium-card">
+          <h4>Medium Signals</h4>
+          <p id="medium-count">0</p>
+        </div>
+        <div class="signal-card weak-card">
+          <h4>Weak Signals</h4>
+          <p id="weak-count">0</p>
+        </div>
+        <div class="signal-card coverage-card">
+          <h4>Total Coverage</h4>
+          <p id="total-coverage">0%</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="../Javascript/dashboard.js"></script>
+  </body>
+</html>
